@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCH Housing Report Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ARCH Housing Report Generator</h1>
+        
+        <form id="reportForm">
+            <div class="form-group">
+                <label for="income">Annual Household Income:</label>
+                <input type="number" id="income" value="90000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="householdSize">Household Size:</label>
+                <input type="number" id="householdSize" value="4" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bedrooms">Bedrooms:</label>
+                <select id="bedrooms" required>
+                    <option value="1">1 bedroom</option>
+                    <option value="2" selected>2 bedrooms</option>
+                    <option value="3">3 bedrooms</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Cities:</label>
+                <div>
+                    <input type="checkbox" id="bellevue" value="Bellevue" checked>
+                    <label for="bellevue">Bellevue</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="kirkland" value="Kirkland" checked>
+                    <label for="kirkland">Kirkland</label>
+                </div>
+            </div>
+            
+            <button type="submit" id="generateBtn">Generate Report</button>
+        </form>
+        
+        <div id="loading" style="display: none;">
+            <p>Generating your report...</p>
+        </div>
+        
+        <div id="result" style="display: none;">
+            <h2>Your Report is Ready!</h2>
+            <button id="downloadBtn">Download HTML Report</button>
+            <button id="viewBtn">View Report</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const income = document.getElementById('income').value;
+            const householdSize = document.getElementById('householdSize').value;
+            const bedrooms = document.getElementById('bedrooms').value;
+            
+            const cities = [];
+            if (document.getElementById('bellevue').checked) cities.push('Bellevue');
+            if (document.getElementById('kirkland').checked) cities.push('Kirkland');
+            
+            if (cities.length === 0) {
+                alert('Please select at least one city');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/generate-report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        income,
+                        householdSize,
+                        bedrooms,
+                        cities
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store the HTML for download
+                    window.reportHTML = data.html;
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('result').style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Failed to generate report');
+                }
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                alert('Error: ' + error.message);
+            }
+        });
+        
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const blob = new Blob([window.reportHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arch-housing-report.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        
+        document.getElementById('viewBtn').addEventListener('click', () => {
+            const newWindow = window.open();
+            newWindow.document.write(window.reportHTML);
+        });
+    </script>
+</body>
+</html>

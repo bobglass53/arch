@@ -1,0 +1,8 @@
+{
+  "name": "arch-housing-reports",
+  "version": "1.0.0",
+  "description": "ARCH Housing Report Generator",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
