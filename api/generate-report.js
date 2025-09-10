@@ -15,14 +15,13 @@ export default async function handler(req, res) {
   try {
     const { income, householdSize, bedrooms, cities } = req.body;
     
-    const prompt = `Generate an ARCH housing report for a family of ${householdSize} with $${income} annual income looking for ${bedrooms}-bedroom apartments in ${cities.join(' and ')}. Use the exact template format from the project files and return the complete HTML ready for printing.`;
+    const prompt = `Generate an ARCH housing report for a family of ${householdSize} with $${income} annual income looking for ${bedrooms}-bedroom apartments in ${cities.join(' and ')}. Use the exact template format from the project files and return the complete HTML ready for printing.  Use instructions and project files from project "Rent guidelines"`;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-beta": "01992257-7491-7398-a2bc-ea5050acfff4",
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
